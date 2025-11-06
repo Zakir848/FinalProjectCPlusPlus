@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <ctime>
 #include <vector>
@@ -30,6 +30,7 @@ public:
 	string getName() const noexcept { return name; }
 	double getAmount() const noexcept { return amount; }
 
+	void increase(double value) { amount += value; }
 	void decrease(double value) {
 		if (value > amount)
 			throw string("Not enough ingredient in stock: " + name);
@@ -37,6 +38,7 @@ public:
 	}
 
 	void showIngridient() const {
+		cout << "------------------------" << endl;
 		cout << "Ingridient Name: " << name << endl;
 		cout << "Ingridient Amount: " << amount << endl;
 	}
@@ -49,7 +51,7 @@ class Dish {
 	double price;
 public:
 
-	Dish() {}
+	Dish() = default;
 
 	Dish(const string name, const string& description, double price) {
 		setName(name);
@@ -94,25 +96,39 @@ public:
 
 class Stock {
 	vector<Ingridient> storage;
+
+	static string toLower(string s) {
+		for (auto& c : s) c = tolower(c);
+		return s;
+	}
 public:
+
+	Stock() {
+		try	{	loadStorage();	}
+		catch (string ex) {	cout << ex << endl;	}
+	}
+
 	void addIngridient(const Ingridient& ingridient) {
-		for (auto stock : storage) {
-			if (stock.getName() == ingridient.getName()) {
-				double newAmount = stock.getAmount() + ingridient.getAmount();
-				stock.setAmount(newAmount);
-				saveStorage(storage);
+		for (auto& stock : storage) {
+			if (toLower(stock.getName()) == toLower(ingridient.getName())) {
+				stock.increase(ingridient.getAmount());
+				saveStorage();
+				cout << "Increased existing ingredient: " << stock.getName() << endl;
 				return;
 			}
 		}
+		storage.push_back(ingridient);
+		saveStorage();
+		cout << "Ingridient added to stock: " << ingridient.getName() << endl;
 	}
 	void useIngridient(const Dish& dish) {
 		for (const auto& ing : dish.getIngridients()) {
 			bool found = false;
 			for (auto& ingStock : storage){
-				if (ingStock.getName() == ing.getName()) {
+				if (toLower(ingStock.getName()) == toLower(ing.getName())) {
 					ingStock.decrease(ing.getAmount());
 					found = true;
-					return;
+					break;
 				}
 			}
 			if (!found) throw string("Ingredient not found in stock: " + ing.getName());
@@ -121,66 +137,40 @@ public:
 		cout << "Stock updated after making dish: " << dish.getName() << endl;
 	}
 
-	void loadStorage(vector<Ingridient> ing, string filePath = "StorageForIngridient.txt") {
+	void loadStorage(string filePath = "StorageForIngridient.txt") {
+		storage.clear();
 		ifstream fs(filePath);
-
 		if (!fs.is_open()) {
-			ofstream fs("StorageForIngridient.txt");
+			ofstream fs(filePath);
 			fs.close();
 			return;
 		}
 
 		string row;
 		while (getline(fs, row)) {
-			if (row.empty()) {
-				throw string();
-			}
+			if (row.empty()) continue;
 			string name, amount_str;
 			int counter = 0;
 			for (auto& character : row) {
-				if (character == '_') {
-					counter++;
-					continue;
-				}
-				switch (counter)
-				{
+				if (character == '_') {	counter++; continue; }
+				switch (counter) {
 				case 0: name += character; break;
 				case 1: amount_str += character; break;
-				default:
-					break;
 				}
 			}
 
 			if (name.empty() || amount_str.empty()) continue;
-
 			double amount = stod(amount_str);
-			Ingridient ingridient(name, amount);
-			storage.push_back(ingridient);
+			storage.push_back(Ingridient(name, amount));
 		}
 	}
 
-	void saveStorage(vector<Ingridient> ing, string filePath = "StorageForIngridient.txt") {
-		
-		string oldData, line;
-		ifstream read(filePath);
-		if (read.is_open()) {
-			while (getline(read, line)) {
-				if (line.empty()) continue;	
-				oldData += line + "\n";
-			}
-		}
-		
+	void saveStorage(string filePath = "StorageForIngridient.txt"){
 		ofstream fs(filePath, ios::out);
-
-		if (!fs.is_open()) {
-			throw string("File couldn't open...");
-		}	
-
-		fs << oldData;
-
-		for (auto stock : storage) {
+		if (!fs.is_open()) throw string("File couldn't open...");
+		for (const auto& stock : storage)
 			fs << stock.getName() << "_" << stock.getAmount() << "\n";
-		}
+		fs.close();
 	}
 
 	void showStock() const {
@@ -499,7 +489,7 @@ public:
 		}
 	}
 
-	void loadUserData(vector<User> users) {
+	void loadUserData(vector<User>& users) {
 		ifstream fs("User.txt");
 
 		if (!fs.is_open()) {
@@ -574,7 +564,8 @@ public:
 
 int main()
 {
-	User use;
+#pragma region TestAreaUser
+	/*User use;
 	string inputUsername, inputPassword;
 	UserManager userM;
 
@@ -619,5 +610,33 @@ int main()
 				cout << ex << endl;
 			}
 		}		
+	}*/
+#pragma endregion
+
+#pragma region TestAreaStock
+	Stock stock;
+	try
+	{
+		stock.showStock();
+	}
+	catch (const string& ex)
+	{
+		cout << ex << endl;
+	}
+	Ingridient ing1("Tomato", 50.3);
+	Ingridient ing2("Cheese", 20.5);
+	Ingridient ing3("Dough", 30.8);
+	Ingridient ing5("Oil", 10.7);
+	stock.addIngridient(ing1);
+	stock.addIngridient(ing2);
+	stock.addIngridient(ing3);
+	stock.addIngridient(ing5);
+	try
+	{
+		stock.showStock();
+	}
+	catch (const string& ex)
+	{
+		cout << ex << endl;
 	}
 }
