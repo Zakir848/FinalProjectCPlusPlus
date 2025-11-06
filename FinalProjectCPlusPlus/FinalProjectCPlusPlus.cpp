@@ -7,312 +7,125 @@
 #include <regex>
 using namespace std;
 
-enum Gender
-{
-	Male,
-	Female,
-};
-
-class User
-{
-	string id;
-	string username;
-	string password;
-	string email;
+class Ingridient {
 	string name;
-	string surname;
-	string number;
-	int age;
-	Gender gender;
-	string card;
-	tm dataofbirth{};
-	void setId(string id) {
-		if (isValidId(id))
-			this->id = id;
-		else
-			throw string("Invalid Id...");
-	}
+	double amount;
 public:
-	User() {};
-
-	User(string id, string username, string password, string email, string name, string surname, int age, string number, Gender gender, int day, int month, int year, string card = "") {
-		setId(id);
-		setUsername(username);
-		setPassword(password);
-		setEmail(email);
+	Ingridient() {}
+	Ingridient(string name, double amount) {
 		setName(name);
-		setSurname(surname);
-		setAge(age);
-		setDataOfBirth(day, month, year);
-		setGender(gender);
-		setNumber(number);
-		setCard(card);
-	}
+		setAmount(amount);
+	}	
 
-	bool isValidPhoneNumber(const string& number) {
-		const regex pattern("^\\+994(50|51|55|70|77|99|10)[0-9]{7}$");
-		return regex_match(number, pattern);
-	}
-
-	bool isValidEmail(const string& email) {
-		const regex pattern("^[A-Za-z0-9._%+-]+@(gmail|mail|outlook|yahoo)\\.(com|ru|az)$");
-		return regex_match(email, pattern);
-	}
-
-	bool isValidId(const string& id) {
-		const regex pattern("^[A-Z0-9]{7}$");
-		return regex_match(id, pattern);
-	}
-
-
-
-	string getId() const noexcept { return id; }
-	string getUserName() const noexcept { return username; }
-	string getPassword() const noexcept { return password; }
-	string getEmail() const noexcept { return email; }
-	string getName() const noexcept { return name; }
-	string getSurname() const noexcept { return surname; }
-	string getNumber() const noexcept { return number; }
-	string getCard() const noexcept { return card; }
-	int getAge() const noexcept { return age; }
-	tm getDataOfBirth() const noexcept { return dataofbirth; }
-	string getGender() const noexcept {
-		if (gender == Male) { return "Male"; }
-		else if (gender == Female) { return "Female"; }
-		return "Unknown";
-	}
-
-	void setUsername(string username) {
-		if (username.length() > 7)
-			this->username = username;
-		else
-			throw string("The Username must be at least 8 characters long.");
-	}
-	void setPassword(string password) {
-		if (password.length() > 7)
-			this->password = password;
-		else
-			throw string("The Password must be at least 8 characters long.");
-	}
-	void setEmail(string email) {
-		if (isValidEmail(email))
-			this->email = email;
-		else
-			throw string("Invalid email format!");
-	}
 	void setName(string name) {
-		if (name.length() > 2)
-			this->name = name;
-		else
-			throw string("The Name must be at least 2 characters long.");
-	}
-	void setSurname(string surname) {
-		if (surname.length() > 4)
-			this->surname = surname;
-		else
-			throw string("Surname must be at least 4 characters long.");
-	}
-	void setAge(int age) {
-		try
-		{
-			if (age > 18)
-				this->age = age;
-			else
-				throw string("User must be at least 18 years old.");
-		}
-		catch (const string& ex)
-		{
-			cout << ex << endl;
-		}
-	}
-	void setCard(string card) {
-		this->card = card;
-	}
-	void setDataOfBirth(int day, int month, int year) {
+		if (name.empty()) throw string("Ingredient name cannot be empty!");
+		this->name = name;
+	}	
 
-		dataofbirth.tm_mday = day;
-		dataofbirth.tm_mon = month - 1;
-		dataofbirth.tm_year = year - 1900;
-
-		time_t now = time(0);
-		tm currenct{};
-		localtime_s(&currenct, &now);
-
-		int calculatorAge = (currenct.tm_year - dataofbirth.tm_year);
-		if ((currenct.tm_mon < dataofbirth.tm_mon) ||
-			(currenct.tm_mon == dataofbirth.tm_mon &&
-				currenct.tm_mday < dataofbirth.tm_mday)) {
-			calculatorAge--;
-		}
-
-		if (calculatorAge >= 18)
-			this->age = calculatorAge;
-		else
-			throw string("User must be at least 18 years old.");
-	}
-	void setGender(Gender gender) {
-		if (gender == Male || gender == Female)
-			this->gender = gender;
-		else
-		{
-			throw string("Invalid gender value!");
-		}
-	}
-	void setNumber(string number) {
-		if (isValidPhoneNumber(number)) {
-			this->number = number;
-		}
-		else
-			throw string("Invalid phone number format!");
-	}
-	void ShowUser() {
-
-		cout << "--------------------------------------------------------------------------------------------------\n" << endl;
-
-		cout << "----------------User-Login-Information----------------" << endl;
-		cout << "Username: " << getUserName() << endl;
-		cout << "Password: " << getPassword() << endl;
-		cout << "Email: " << getEmail() << endl;
-		cout << "----------------User-Information----------------" << endl;
-		cout << "Id: " << getId() << endl;
-		cout << "Name: " << getName() << endl;
-		cout << "Surname: " << getSurname() << endl;
-		cout << "Age: " << getAge() << endl;
-		cout << "Birthday( Day / Month / Year ): " << dataofbirth.tm_mday << " / " << dataofbirth.tm_mon + 1 << " / " << dataofbirth.tm_year + 1900 << endl;
-		cout << "Gender: " << getGender() << endl;
+	void setAmount(double amount) {
+		if (amount <= 0) throw string("Ingredient amount must be positive!");
+		this->amount = amount;
 	}
 
-	friend istream& operator>>(istream& in, User& right) {
-		string id, username, password, email, name, surname, number, gender_str;
-		int age, day, month, year;
-		Gender gender;
+	string getName() const noexcept { return name; }
+	double getAmount() const noexcept { return amount; }
 
-		try
-		{
-			cout << "id: "; cin >> id;
-			cout << "Name: "; cin >> name;
-			cout << "Surname: "; cin >> surname;
-			cout << "Age: "; cin >> age;
-			cout << "UserName: "; cin >> username;
-			cout << "Password: "; cin >> password;
-			cout << "Email: "; cin >> email;
-			cout << "Number(+994....): "; cin >> number;
-			cout << "Gender(Male/Female): "; cin >> gender_str;
-			cout << "Birthday(Day/Month/Year): "; cin >> day >> month >> year;
-		}
-		catch (const string& ex)
-		{
-			cout << ex << endl;
-		}
+	void decrease(double value) {
+		if (value > amount)
+			throw string("Not enough ingredient in stock: " + name);
+		amount -= value;
+	}
 
-
-
-		if (gender_str == "Male" || gender_str == "male" || gender_str == "MALE") gender = Male;
-		else if (gender_str == "Female" || gender_str == "female" || gender_str == "FEMALE") gender = Female;
-		else throw string("Invalid gender input!");
-
-		right = User(id, username, password, email, name, surname, age, number, gender, day, month, year);
-
-		return in;
+	void showIngridient() const {
+		cout << "Ingridient Name: " << name << endl;
+		cout << "Ingridient Amount: " << amount << endl;
 	}
 };
 
-class UserManager {
-	vector<User> users;
+class Dish {
+	string name;
+	string description;
+	vector<Ingridient> ingridients;
+	double price;
 public:
 
-	UserManager() {
-		try
-		{
-			loadUserData(users);
-		}
-		catch (string& ex)
-		{
-			cout << ex << endl;
-		}
+	Dish() {}
+
+	Dish(const string name, const string& description, double price) {
+		setName(name);
+		setDescription(description);
+		setPrice(price);
 	}
 
-	void signUp(const User& user) {
-		for (size_t i = 0; i < users.size(); i++)
-		{
-			if (users[i].getId() == user.getId())
-				throw string("This id already exists!");
-			if (users[i].getEmail() == user.getEmail())
-				throw string("This email already exists!");
-			if (users[i].getNumber() == user.getNumber())
-				throw string("This Number already exists!");
-		}
-		users.push_back(user);
-		saveUserData(users);
-		cout << "User successfully registered!\n";
+	void setName(string name) {
+		if (name.empty()) throw string("Dish name cannot be empty!");
+		this->name = name;
 	}
 
-	void signIn(const string& username, const string& password) {
-		for (size_t i = 0; i < users.size(); i++)
-		{
-			if (users[i].getUserName() == username && users[i].getPassword() == password) {
-				cout << "Login successful\n";
+	void setDescription(string description) {
+		if (description.empty()) throw string("Dish description cannot be empty!");
+		this->description = description;
+	}
+
+	void setPrice(double price) {
+		if (price <= 0) throw string("Dish price must be positive!");
+		this->price = price;
+	}
+
+	string getName() const noexcept { return name; }
+	string getDescription() const noexcept { return description; }
+	double getPrice() const noexcept { return price; }
+	vector<Ingridient> getIngridients() const noexcept { return ingridients; }
+
+	void addIngridient(const Ingridient& ingridient) {
+		ingridients.push_back(ingridient);
+	}
+
+	void show() const {
+		cout << "Dish Name: " << name << endl;
+		cout << "Description: " << description << endl;
+		cout << "Price: " << price << endl;
+		cout << "Ingridients: " << endl;
+		for (const auto& ing : ingridients) {
+			ing.showIngridient();
+		}
+	}
+};
+
+class Stock {
+	vector<Ingridient> storage;
+public:
+	void addIngridient(const Ingridient& ingridient) {
+		for (auto stock : storage) {
+			if (stock.getName() == ingridient.getName()) {
+				double newAmount = stock.getAmount() + ingridient.getAmount();
+				stock.setAmount(newAmount);
+				saveStorage(storage);
 				return;
 			}
 		}
-		if (username == "Admin" && password == "Admin") {
-			cout << "Hi Admin" << endl;
-			return;
-		}
 	}
-
-	void saveUserData(vector<User>& users) {
-		ofstream fs("User.txt", ios::out);
-		try
-		{
-			string oldData;
-			ifstream read("User.txt");
-			while (getline(read, oldData)) {
-				string line;
-				if (line.empty()) continue;
-				oldData += line + "\n";
-			}
-
-
-			if (!fs.is_open()) {
-				throw string("File couldn't open...");
-			}
-
-			fs << oldData;
-
-
-
-			for (auto& user : users)
-			{
-				if (user.isValidEmail(user.getEmail()) && user.isValidId(user.getId()) && user.isValidPhoneNumber(user.getNumber())) {
-					fs << user.getId() << "_"
-						<< user.getUserName() << "_"
-						<< user.getPassword() << "_"
-						<< user.getEmail() << "_"
-						<< user.getName() << "_"
-						<< user.getSurname() << "_"
-						<< user.getAge() << "_"
-						<< user.getNumber() << "_"
-						<< user.getGender() << "_"
-						<< user.getDataOfBirth().tm_mday << "/"
-						<< user.getDataOfBirth().tm_mon + 1 << "/"
-						<< user.getDataOfBirth().tm_year + 1900 << "\n";
+	void useIngridient(const Dish& dish) {
+		for (const auto& ing : dish.getIngridients()) {
+			bool found = false;
+			for (auto& ingStock : storage){
+				if (ingStock.getName() == ing.getName()) {
+					ingStock.decrease(ing.getAmount());
+					found = true;
+					return;
 				}
 			}
-			fs.close();
+			if (!found) throw string("Ingredient not found in stock: " + ing.getName());
 
 		}
-		catch (const string& ex) {
-			cout << ex << endl;
-		}
+		cout << "Stock updated after making dish: " << dish.getName() << endl;
 	}
 
-
-	void loadUserData(vector<User> users) {
-		ifstream fs("User.txt");
+	void loadStorage(vector<Ingridient> ing, string filePath = "StorageForIngridient.txt") {
+		ifstream fs(filePath);
 
 		if (!fs.is_open()) {
-			ofstream fs("User.txt");
+			ofstream fs("StorageForIngridient.txt");
 			fs.close();
 			return;
 		}
@@ -322,8 +135,7 @@ public:
 			if (row.empty()) {
 				throw string();
 			}
-
-			string id, username, password, email, name, surname, age_str, number, gender_str, day_str, month_str, year_str;
+			string name, amount_str;
 			int counter = 0;
 			for (auto& character : row) {
 				if (character == '_') {
@@ -332,111 +144,55 @@ public:
 				}
 				switch (counter)
 				{
-				case 0: id += character; break;
-				case 1: username += character; break;
-				case 2: password += character; break;
-				case 3: email += character; break;
-				case 4: name += character; break;
-				case 5: surname += character; break;
-				case 6: age_str += character; break;
-				case 7: number += character; break;
-				case 8: gender_str += character; break;
-				case 9: day_str += character; break;
-				case 10: month_str += character; break;
-				case 11: year_str += character; break;
+				case 0: name += character; break;
+				case 1: amount_str += character; break;
 				default:
 					break;
 				}
 			}
-			getline(fs, id, '_');
-			getline(fs, username, '_');
-			getline(fs, password, '_');
-			getline(fs, email, '_');
-			getline(fs, name, '_');
-			getline(fs, surname, '_');
-			getline(fs, age_str, '_');
-			getline(fs, number, '_');
-			getline(fs, gender_str, '_');
-			getline(fs, day_str, '/');
-			getline(fs, month_str, '/');
-			getline(fs, year_str, '\n');
 
-			if (id.empty() || username.empty() || password.empty() || email.empty() || name.empty() || surname.empty() ||
-				age_str.empty() || number.empty() || gender_str.empty() || day_str.empty() || month_str.empty() || year_str.empty()) continue;
+			if (name.empty() || amount_str.empty()) continue;
 
-			int age = stoi(age_str);
-			int day = stoi(day_str);
-			int month = stoi(month_str);
-			int year = stoi(year_str);
-
-			Gender gender;
-			if (gender_str == "Male") gender = Male;
-			else if (gender_str == "Female") gender = Female;
-			else throw string("Invalid gender format!");
-			User user(id, username, password, email, name, surname, age, number, gender, day, month, year);
-			users.push_back(user);
+			double amount = stod(amount_str);
+			Ingridient ingridient(name, amount);
+			storage.push_back(ingridient);
 		}
 	}
 
+	void saveStorage(vector<Ingridient> ing, string filePath = "StorageForIngridient.txt") {
+		
+		string oldData, line;
+		ifstream read(filePath);
+		if (read.is_open()) {
+			while (getline(read, line)) {
+				if (line.empty()) continue;	
+				oldData += line + "\n";
+			}
+		}
+		
+		ofstream fs(filePath, ios::out);
+
+		if (!fs.is_open()) {
+			throw string("File couldn't open...");
+		}	
+
+		fs << oldData;
+
+		for (auto stock : storage) {
+			fs << stock.getName() << "_" << stock.getAmount() << "\n";
+		}
+	}
+
+	void showStock() const {
+		cout << "Current Stock:" << endl;
+		if (storage.empty()) {
+			throw string("Stock is empty");
+		}
+		for (const auto& ing : storage) {
+			ing.showIngridient();
+		}
+	}	
 };
-
-
-int main()
-{
-	User use;
-	string inputUsername, inputPassword;
-	UserManager userM;
-
-	while (true)
-	{
-		string choice_str;
-		int choice;
-		cout << "1.Sign In\n2.Sing Up\nEnter: ";
-		cin >> choice_str;
-		try
-		{
-			choice = stoi(choice_str);
-		}
-		catch (...)
-		{
-			cout << "SOME ERROR" << endl;
-		}
-
-		if (choice == 1) {
-			try
-			{
-				cout << "Username: "; cin >> inputUsername;
-				cout << "Password: ";cin >> inputPassword;
-				userM.signIn(inputUsername, inputPassword);
-			}
-			catch (const string& ex)
-			{
-				cout << ex << endl;
-			}
-
-		}
-
-		else if (choice == 2) {
-			try
-			{
-				cin >> use;
-				userM.signUp(use);
-			}
-			catch (const string& ex)
-			{
-				cout << ex << endl;
-			}
-		}
-		else throw string();
-	}
-}#include <iostream>
-#include <string>
-#include <ctime>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <regex>
-using namespace std;
 
 enum Gender
 {
@@ -617,6 +373,7 @@ public:
 		string id, username, password, email, name, surname, number, gender_str;
 		int age, day, month, year;
 		Gender gender;
+		vector<string> errors;
 
 		try
 		{
@@ -633,7 +390,7 @@ public:
 		}
 		catch (const string& ex)
 		{
-			cout << ex << endl;
+			errors.push_back(ex);
 		}
 
 
@@ -692,26 +449,31 @@ public:
 		}
 	}
 
+	void order() {
+		// Implementation for order functionality can be added here
+	}
+
 	void saveUserData(vector<User>& users) {
-		ofstream fs("User.txt", ios::out);
 		try
 		{
-			string oldData;
+			string oldData, line;
 			ifstream read("User.txt");
-			while (getline(read, oldData)) {
-				string line;
-				if (line.empty()) continue;
-				oldData += line + "\n";
+			if (read.is_open()) {
+				while (getline(read, line)) {
+					if (line.empty()) continue;
+					oldData += line + "\n";
+				}
+				read.close();
 			}
+			
 
+			ofstream fs("User.txt", ios::out);
 
 			if (!fs.is_open()) {
 				throw string("File couldn't open...");
 			}
 
 			fs << oldData;
-
-
 
 			for (auto& user : users)
 			{
@@ -731,13 +493,11 @@ public:
 				}
 			}
 			fs.close();
-
 		}
 		catch (const string& ex) {
 			cout << ex << endl;
 		}
 	}
-
 
 	void loadUserData(vector<User> users) {
 		ifstream fs("User.txt");
@@ -831,6 +591,7 @@ int main()
 		catch (...)
 		{
 			cout << "SOME ERROR" << endl;
+			continue;
 		}
 
 		if (choice == 1) {
@@ -857,7 +618,6 @@ int main()
 			{
 				cout << ex << endl;
 			}
-		}
-		else throw string();
+		}		
 	}
 }
